@@ -1,84 +1,106 @@
-// [Missing Code 1] Include header file.
-  
+#include<iostream>
+#include<fstream>
+#include<vector>
+#include<string>
+#include<cstdlib>
+
+using namespace std;
+
+char score2grade(int score){
+    if(score >= 80) return 'A';
+    if(score >= 70) return 'B';
+    if(score >= 60) return 'C';
+    if(score >= 50) return 'D';
+    else return 'F';
+}
+
+string toUpperStr(string x){
+    string y = x;
+    for(unsigned i = 0; i < x.size();i++) y[i] = toupper(x[i]);
+    return y;
+}
+
+void importDataFromFile(string a, vector<string> &n, vector<int> &s, vector<char> &g ){
+    ifstream file (a);
+    string text;
+    char format[] ="%[^:]: %d %d %d";
+    while(getline(file,text)){
+        int a,b,c;
+        char name[100];
+        sscanf(text.c_str(),format,name,&a,&b,&c);
+        n.push_back(name);
+        s.push_back(a+b+c);
+        g.push_back(score2grade(a+b+c));
+    }
+
+}
+
+void getCommand(string &command, string &key){
+    
+    cout << "Please input your command: ";
+    cin >> command;
+    if(toUpperStr(command)=="GRADE" ||toUpperStr(command)=="NAME"){
+        cin.ignore();
+        getline(cin,key);
+    }
+}
+
+void searchName(vector<string> name,vector<int> score,vector<char> grade,string key){
+     
+     int x=0;
+    
+    cout << "---------------------------------\n";
+
+        for(unsigned int i=0; i<name.size() ;i++){
+            if(key == toUpperStr(name[i])){
+                cout << name[i] << "'s score = " << score[i] << endl;
+                cout << name[i] << "'s grade = " << grade[i] << endl;
+                x++;
+            }else if(i == name.size()-1 && x==0){
+                cout << "Cannot found."<<endl;
+            }
+        }
+
+    cout << "---------------------------------\n";
+}
+
+void searchGrade(vector<string> name,vector<int> score,vector<char> grade,string key){
+      int x=0;
+
+    cout << "---------------------------------\n";
+    for(unsigned int i=0; i<name.size() ;i++){
+        if(*key.c_str() == grade[i]){
+            cout << name[i] << " (" << score[i] <<")" << endl;
+            x++;
+        }else if(i == name.size()-1 && x==0){
+            cout << "Cannot found." << endl ;
+        }
+    }
+   cout << "---------------------------------\n";  
+}
+
+
 int main(){
-	srand(time(0));
-	
-	string name;	
-	cout << "Please input your name: ";
-	getline(cin,name);	
-	Unit hero("Hero",name);
-	
-	Equipment sword(0,8,4);
-	// [Missing Code 2]  Create Equipment axes, shield and armor here
-
-	
-	
-	char eq;	
-	cout << " [1] Sword \n [2] Axes \n [3] Shield \n [4] Armor \n";
-	cout << "Please selet your equipment: ";
-	cin >> eq;
-	// [Missing Code 3] Equip a selected equipment to the hero. 
-
-	
-	
-	Unit mons("Monster","Kraken");
-	
-	int turn_count = 1;
-	char player_action = '\0',monster_action = '\0';
-	int p = 0, m = 0;
-	while(true){
-		mons.newTurn();	
-		hero.newTurn();			
-		mons.showStatus();
-		drawScene(player_action,p,monster_action,m);
-		hero.showStatus();		
-		cout << "[A] Attack [H] Heal [G] Guard [D] Dodge [C] Change Equipment [E] Exit";
-		cout << "\n[Turn " << turn_count << "] Enter your action: ";
-		cin >> player_action;
-		player_action = toupper(player_action);
-		if(player_action == 'E') break; 
-		
-		int temp = rand()%5;
-		if(temp <= 1) monster_action = 'A';
-		else if(temp == 2) monster_action = 'G';
-		else if(temp == 3) monster_action = 'D';
-		else if(temp == 4) monster_action = 'U';
-		
-		if(player_action == 'G') hero.guard();
-		if(monster_action == 'G') mons.guard();
-		
-		if(player_action == 'D') hero.dodge();
-		if(monster_action == 'D') mons.dodge();
-		
-		if(player_action == 'H') p = hero.heal();
-		
-		if(player_action == 'C'){
-			char eq;	
-			cout << " [1] Sword \n [2] Axes \n [3] Shield \n [4] Armor \n";
-			cout << "Please select your equipment: ";
-			cin >> eq;
-			// [Missing Code 3] Equip a selected equipment to the hero.
-
-			
-		}
-		
-		if(player_action == 'A') p = hero.attack(mons); 
-		if(monster_action == 'A') m = mons.attack(hero); 
-		if(monster_action == 'U') m = mons.ultimateAttack(hero); 
-		
-		if(hero.isDead()){
-			drawScene(player_action,p,monster_action,m);
-			playerLose();
-			break; 
-		}
-		
-		if(mons.isDead()){
-			drawScene(player_action,p,monster_action,m);
-			playerWin();
-			break; 
-		}
-		
-		turn_count++;
-	}
-	return 0;
+    string filename = "name_score.txt";
+    vector<string> names;
+    vector<int> scores;
+    vector<char> grades; 
+    importDataFromFile(filename, names, scores, grades);
+    
+    do{
+        string command, key;
+        getCommand(command,key);
+        command = toUpperStr(command);
+        key = toUpperStr(key);
+        if(command == "EXIT") break;
+        else if(command == "GRADE") searchGrade(names, scores, grades, key);
+        else if(command == "NAME") searchName(names, scores, grades, key);
+        else{
+            cout << "---------------------------------\n";
+            cout << "Invalid command.\n";
+            cout << "---------------------------------\n";
+        }
+    }while(true);
+    
+    return 0;
 }
